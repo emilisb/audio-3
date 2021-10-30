@@ -1,1 +1,1 @@
-# Garso signalų analizė laiko srityje
+# Garso signalų apdorojimas laiko srityje
