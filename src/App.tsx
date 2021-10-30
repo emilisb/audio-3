@@ -1,5 +1,6 @@
 import {useState, useMemo, useCallback, ChangeEvent} from 'react';
 import {WaveChart} from './WaveChart';
+import {fadeEffect} from './effects';
 import './App.css';
 
 function App() {
@@ -43,24 +44,15 @@ function App() {
 
   const applyFadeEffect = useCallback(() => {
     if (audioBuffer) {
-      const samplesToFadeIn = Math.round((fadeInDuration / 1000) * audioBuffer.sampleRate);
-      const samplesToFadeOut = Math.round((fadeOutDuration / 1000) * audioBuffer.sampleRate);
-
       const modifiedAudioBuffer = new AudioBuffer(audioBuffer);
 
       for (let channel = 0; channel < audioBuffer.numberOfChannels; channel++) {
         const channelData = new Float32Array(audioBuffer.length);
         audioBuffer.copyFromChannel(channelData, channel);
 
-        for (let sample = 0; sample < samplesToFadeIn; sample++) {
-          const modifier = sample / samplesToFadeIn;
-          channelData[sample] *= modifier;
-        }
-
-        for (let sample = audioBuffer.length - samplesToFadeOut; sample < audioBuffer.length; sample++) {
-          const modifier = (audioBuffer.length - sample) / samplesToFadeOut;
-          channelData[sample] *= modifier;
-        }
+        const effect = fadeEffect({channelData, sampleRate: audioBuffer.sampleRate});
+        effect.fadeIn(fadeInDuration);
+        effect.fadeOut(fadeOutDuration);
 
         modifiedAudioBuffer.copyToChannel(channelData, channel);
       }
@@ -83,7 +75,7 @@ function App() {
 
   return (
     <div className="App">
-      <h1>Garso signalų atvaizdavimas</h1>
+      <h1>Garso signalų apdorojimas laiko srityje</h1>
       <div>
         <input type="file" onChange={onFileChange} />
       </div>
